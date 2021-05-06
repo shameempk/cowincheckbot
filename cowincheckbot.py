@@ -30,6 +30,9 @@ done_markup = [
     ['Done'],
 ]
 
+headers = {
+    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0)' #User agent required in the header for public api to work.
+}
 
 def create_markup(choice, data) -> list:
     markup = []
@@ -57,7 +60,11 @@ def start(update: Update, context: CallbackContext) -> int:
         )
         return DISTRICT
 
-    r = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/states")
+    r = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/states", headers=headers)
+    if(r.status_code != 200):
+        send_as_markdown("API Error", update)
+        return DONE
+    
     states_data = r.json()
     state_markup = create_markup('state', states_data)
 
@@ -72,7 +79,11 @@ def start(update: Update, context: CallbackContext) -> int:
 def state_choice(update: Update, context: CallbackContext) -> int:
     text = update.message.text
     context.user_data['state_id'], context.user_data['state_name'] = text.split(".")
-    r = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/districts/"+context.user_data['state_id'])
+    r = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/districts/"+context.user_data['state_id'], headers=headers)
+    if(r.status_code != 200):
+        send_as_markdown("API Error", update)
+        return DONE
+
     districts_data = r.json()
     district_markup = create_markup('district', districts_data)
     update.message.reply_text(
@@ -154,7 +165,11 @@ def district_choice(update: Update, context: CallbackContext) -> int:
     text = update.message.text
     if not 'district_id' in context.user_data:
         context.user_data['district_id'], context.user_data['district_name'] = text.split(".")
-    r = requests.get("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id="+context.user_data['district_id']+"&date="+today)
+    r = requests.get("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id="+context.user_data['district_id']+"&date="+today, headers=headers)
+    if(r.status_code != 200):
+        send_as_markdown("API Error", update)
+        return DONE
+        
     centers = r.json()['centers']
     center_list = format_slots_output(centers)
     if len(center_list) <= TG_MESSAGE_CHAR_LIMIT:

@@ -108,7 +108,8 @@ def format_slots_output(centers):
             r+="\n"
         r+=str(i)+"\. *`"+center['name']+"`* "+str(session['min_age_limit'])+"\+ _"+center['fee_type']+"_\n"
         for session in center['sessions']:
-            r+="\t\t`"+session['date']+"` "+session['vaccine']+" `"+str(session['available_capacity'])+"` slots\n"
+            if session['available_capacity']:
+                r+="\t\t`"+session['date']+"` "+session['vaccine']+" `"+str(session['available_capacity'])+"` slots\n"
         i+=1
     return r
 

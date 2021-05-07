@@ -31,7 +31,7 @@ done_markup = [
 ]
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0)' #User agent required in the header for public api to work.
+    'User-Agent': 'python-requests/2.25.1' #User agent required in the header for public api to work.
 }
 
 def create_markup(choice, data) -> list:

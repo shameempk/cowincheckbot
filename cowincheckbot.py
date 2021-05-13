@@ -59,6 +59,13 @@ def start(update: Update, context: CallbackContext) -> int:
         reply_markup=ReplyKeyboardMarkup(repeat_markup, one_time_keyboard=True, resize_keyboard=True),
         )
         return DISTRICT
+    if('pincode' in context.user_data):
+        repeat_markup=[["PINCODE: "+context.user_data['pincode']], ['New Search', 'Done']]
+        update.message.reply_text(
+        "Do you want to repeat previous search? ",
+        reply_markup=ReplyKeyboardMarkup(repeat_markup, one_time_keyboard=True, resize_keyboard=True),
+        )
+        return STATE
 
     r = requests.get("https://cdn-api.co-vin.in/api/v2/admin/location/states", headers=headers)
     if(r.status_code != 200):
@@ -69,7 +76,7 @@ def start(update: Update, context: CallbackContext) -> int:
     state_markup = create_markup('state', states_data)
 
     update.message.reply_text(
-        "Select state:",
+        "Enter PINCODE or Select state:",
         reply_markup=ReplyKeyboardMarkup(state_markup, one_time_keyboard=True, resize_keyboard=True),
     )
 
@@ -188,6 +195,36 @@ def district_choice(update: Update, context: CallbackContext) -> int:
         )
         return PINCODE
 
+def direct_pincode_choice(update: Update, context: CallbackContext) -> int:
+    today = date.today().strftime("%d/%m/%Y")
+    text = update.message.text
+    if not 'pincode' in context.user_data:
+        context.user_data['pincode'] = text.strip()
+    r = requests.get("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode="+context.user_data['pincode']+"&date="+today, headers=headers)
+    if(r.status_code != 200):
+        send_as_markdown("API Error", update)
+        return DONE
+        
+    centers = r.json()['centers']
+    center_list = format_slots_output(centers)
+    if len(center_list) <= TG_MESSAGE_CHAR_LIMIT:
+        if not len(center_list):
+            send_as_markdown("No slots available", update)
+        else:
+            send_info(update, today)
+            send_as_markdown(center_list, update)
+            send_instruction(update)
+        return DONE
+    else:
+        message_chunks = split_text(center_list)
+        if(len(message_chunks)):
+            send_info(update, today)    
+        for message in message_chunks:
+            if len(message):
+                send_as_markdown(message, update)
+        send_instruction(update)
+        return DONE
+
         
 def pincode_choice(update: Update, context: CallbackContext) -> int:
     today = date.today().strftime("%d/%m/%Y")
@@ -239,6 +276,9 @@ def main() -> None:
             STATE: [
                 MessageHandler(
                     Filters.regex('^\d+\.\s[\s\w]+$'), state_choice
+                ),
+                MessageHandler(
+                    Filters.regex('^\d{6}$'), direct_pincode_choice
                 )
             ],
             DISTRICT: [

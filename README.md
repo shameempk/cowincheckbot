@@ -3,7 +3,7 @@ Telegram bot to check availability of vaccination slots in India.
 
 # Setup
 * Install requirements using `pip3 install -r requirements.txt`
-* Place your Bot Token in a file called `token.conf` under same directory.
+* Create `config.ini` under same directory with same format as `dummy_config.ini`. Fill in your bot token and modify other configurations as required.
 * Start `cowincheckbot.py`
 
 Available on telegram https://t.me/cowincheckbot

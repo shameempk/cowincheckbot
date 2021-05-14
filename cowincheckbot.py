@@ -80,7 +80,8 @@ def start(update: Update, context: CallbackContext) -> int:
     state_markup = create_markup('state', states_data)
 
     update.message.reply_text(
-        "Enter PINCODE or Select state:",
+        "Enter *PINCODE* or select *STATE*:",
+        parse_mode="MarkdownV2",
         reply_markup=ReplyKeyboardMarkup(state_markup, one_time_keyboard=True, resize_keyboard=True),
     )
 
@@ -284,6 +285,15 @@ def main() -> None:
                 ),
                 MessageHandler(
                     Filters.regex('^\d{6}$'), direct_pincode_choice
+                ),
+                MessageHandler(
+                    Filters.regex('^PINCODE: \d{6}$'), direct_pincode_choice
+                ),
+                MessageHandler(
+                    Filters.regex('^New Search$'), start
+                ),
+                MessageHandler(
+                    Filters.regex('^Done$'), done
                 )
             ],
             DISTRICT: [

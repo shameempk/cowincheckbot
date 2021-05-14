@@ -14,6 +14,11 @@ from telegram.ext import (
 )
 import requests
 from datetime import date
+import configparser
+
+# Read configuration file. Config format available as dummy_config.ini
+config = configparser.ConfigParser()        
+config.read("config.ini")
 
 # Enable logging
 logging.basicConfig(
@@ -24,14 +29,13 @@ logger = logging.getLogger(__name__)
 
 STATE, DISTRICT, PINCODE, DONE = range(4)
 TG_MESSAGE_CHAR_LIMIT = 4096
-TG_BOT_TOKEN = open("token.conf", "r").read().strip()
 
 done_markup = [
     ['Done'],
 ]
 
 headers = {
-    'User-Agent': 'python-requests/2.25.1' #User agent required in the header for public api to work.
+    'User-Agent': config['API']['user-agent'] #User agent required in the header for public api to work.
 }
 
 def create_markup(choice, data) -> list:
@@ -263,8 +267,9 @@ def done(update: Update, context: CallbackContext) -> int:
 
 
 def main() -> None:
+    tg_config = config['TELEGRAM']
     # Create the Updater and pass it your bot's token.
-    updater = Updater(TG_BOT_TOKEN)
+    updater = Updater(tg_config['token'])
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher

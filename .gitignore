@@ -1,4 +1,4 @@
 # created by virtualenv automatically
 bin
 lib
-token.conf
+config.ini
